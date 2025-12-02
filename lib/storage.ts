@@ -1,4 +1,4 @@
-import type { User, DailyRecord } from "./types"
+import type { User, DailyRecord, FoodItem } from "./types"
 
 const USER_KEY = "nutritionTracker_currentUser"
 const USERS_INDEX_KEY = "nutritionTracker_users"
@@ -161,5 +161,48 @@ export function clearAllData(): void {
     localStorage.removeItem(USER_KEY)
   } catch (error) {
     console.error("Error clearing data:", error)
+  }
+}
+
+// --- Custom foods per user -------------------------------------------------
+function getUserFoodsKey(userId: string): string {
+  return `nutritionTracker_userFoods_${userId}`
+}
+
+export function getUserFoods(userId: string): FoodItem[] {
+  try {
+    const key = getUserFoodsKey(userId)
+    const data = localStorage.getItem(key)
+    return data ? JSON.parse(data) : []
+  } catch (error) {
+    console.error("Error getting user foods:", error)
+    return []
+  }
+}
+
+export function saveUserFood(userId: string, food: FoodItem): void {
+  try {
+    const key = getUserFoodsKey(userId)
+    const existing = getUserFoods(userId)
+    const idx = existing.findIndex((f) => f.id === food.id)
+    if (idx !== -1) {
+      existing[idx] = food
+    } else {
+      existing.push(food)
+    }
+    localStorage.setItem(key, JSON.stringify(existing))
+  } catch (error) {
+    console.error("Error saving user food:", error)
+  }
+}
+
+export function removeUserFood(userId: string, foodId: string): void {
+  try {
+    const key = getUserFoodsKey(userId)
+    const existing = getUserFoods(userId)
+    const filtered = existing.filter((f) => f.id !== foodId)
+    localStorage.setItem(key, JSON.stringify(filtered))
+  } catch (error) {
+    console.error("Error removing user food:", error)
   }
 }

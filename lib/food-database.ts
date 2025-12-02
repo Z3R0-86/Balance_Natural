@@ -1,5 +1,6 @@
 // Base de datos de alimentos con alimentos comunes y sus valores calóricos
 import type { FoodItem } from "./types"
+import { getUserFoods } from "./storage"
 
 export const FOOD_DATABASE: FoodItem[] = [
   // Proteínas
@@ -63,4 +64,17 @@ export const getCategoryLabel = (category: string): string => {
     snacks: "Snacks",
   }
   return labels[category] || category
+}
+
+// Devuelve la lista combinada de alimentos: base + personalizados del usuario
+export function getFoodsForUser(userId?: string): FoodItem[] {
+  if (!userId) return FOOD_DATABASE
+  try {
+    const custom = getUserFoods(userId) || []
+    // custom items should not collide ids; ensure we return custom after base
+    return [...FOOD_DATABASE, ...custom]
+  } catch (error) {
+    console.error("Error fetching foods for user:", error)
+    return FOOD_DATABASE
+  }
 }
